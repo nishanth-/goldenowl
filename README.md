@@ -5,7 +5,7 @@
 **goldenowl** is a Python package that provides most commonly used utilities for analysis in the financial domain such as those related to investments and trading.
 
 ## Main Features
-Here are just a few of the things that pandas does well:
+Here are few things this package does
 
   - [**Holding Analysis**] - Calculate XIRR of multi touch point investments, portfolio returns etc
   
