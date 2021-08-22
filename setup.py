@@ -1,6 +1,6 @@
 from setuptools import setup
 setup(
-    name = 'goldowl',         # How you named your package folder (MyLib)
+    name = 'goldenowl',         # How you named your package folder (MyLib)
     packages = [
                 'goldenowl',
                 'goldenowl.portfolio'
