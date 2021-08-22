@@ -3,7 +3,6 @@ import pandas as pd
 import datetime as dt
 from xirr.math import xirr
 
-
 class Holding:
     def __init__(self, aName, aInstPriceMap):
         self.m_name = aName;
