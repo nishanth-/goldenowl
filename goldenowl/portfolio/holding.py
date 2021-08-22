@@ -51,7 +51,7 @@ class Holding:
             filtered[norm_date]-= final_val;
         else:
             filtered[norm_date]= -final_val;
-            return xirr(filtered)
+        return xirr(filtered)
 
 
 #Free floating functions below
@@ -61,21 +61,23 @@ def getSIPReturn(aInstPr,aFreq,aStart,aEnd):
     norm_date = pd.to_datetime(aStart);
     norm_end_date = pd.to_datetime(aEnd);
     sip_date = norm_date;
+
     while (not(sip_date in aInstPr.keys())):
         sip_date+=dt.timedelta(days=1);
-        hldng.buyAmount(100, sip_date);
+    hldng.buyAmount(100, sip_date);
 
     while(sip_date < norm_end_date):
         temp_date=sip_date+dt.timedelta(days=aFreq);
         while (not(temp_date in aInstPr.keys())):
-            if (temp_date+dt.timedelta(days=1) > norm_end_date):
+            if (temp_date >= norm_end_date):
                 break;
             temp_date+=dt.timedelta(days=1);
-            if (temp_date in aInstPr.keys()):
-                sip_date = temp_date;
-                hldng.buyAmount(100, sip_date);
-                if (temp_date > norm_end_date):
-                    break;
+            
+        if (temp_date in aInstPr.keys()):
+            sip_date = temp_date;
+            hldng.buyAmount(100, sip_date);
 
+        if (temp_date >= norm_end_date):
+            break;
 
     return hldng.getXIRR(sip_date);
