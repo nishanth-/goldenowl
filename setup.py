@@ -5,7 +5,7 @@ setup(
                 'goldenowl',
                 'goldenowl.portfolio'
                 ],   # Chose the same as "name"
-    version = '0.1',      # Start with a small number and increase it with every change you make
+    version = '1.1',      # Start with a small number and increase it with every change you make
     license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     author = 'Nishanth (nishanth-)',                   # Type in your name
     author_email = '',      # Type in your E-Mail
