@@ -10,6 +10,9 @@ class Holding:
         self.m_inst_pr_map = aAsset;
         self.m_tran_details={};
 
+    def getName(self):
+        return self.m_name;
+
     def buyUnits(self,aUnits,aDate):
         norm_date = pd.to_datetime(aDate);
         if (norm_date in self.m_tran_details.keys()):
