@@ -1,6 +1,7 @@
 import pytest
 import pandas as pd
 import goldenowl.portfolio.holding as hd
+import goldenowl.asset.asset as at
 
 def get_prdata():
     price_dict_raw ={
@@ -13,7 +14,10 @@ def get_prdata():
                 '2012-01-23': 4000.0,
                 };
     price_dict = {pd.to_datetime(key):val for key, val in price_dict_raw.items()} 
-    return price_dict;
+    tup = list(zip(price_dict.keys(), price_dict.values()));
+    data = pd.DataFrame(tup, columns=['Date', 'Close']);
+    data['Open'] = data['High'] = data['Low'] = 0;
+    return at.Asset('Test', data);
 
 def test_buyUnits():
     price_dict = get_prdata();
@@ -42,7 +46,7 @@ def test_AmountTx():
     val = hldng.getHoldingValue('2005-05-2');
     assert val == pytest.approx(401.018, 0.1), "buyUnits failed"
 
-def test_AmountTx():
+def test_XIRR():
     price_dict = get_prdata();
     hldng =hd.Holding('Test', price_dict);
     hldng.buyUnits(10, '1992-11-23');
@@ -59,4 +63,4 @@ def test_AmountTx():
 def test_SIP():
     price_dict = get_prdata();
     sip_r = hd.getSIPReturn(price_dict, 30,'1990-11-23', '2020-11-11') 
-    assert sip_r == pytest.approx(0.29,0.1), "SIP calculation failed"
+    assert sip_r == pytest.approx(0.18,0.1), "SIP calculation failed"

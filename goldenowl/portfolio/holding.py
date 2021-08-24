@@ -2,11 +2,12 @@ import itertools
 import pandas as pd
 import datetime as dt
 from xirr.math import xirr
+import goldenowl.asset.asset
 
 class Holding:
-    def __init__(self, aName, aInstPriceMap):
+    def __init__(self, aName, aAsset):
         self.m_name = aName;
-        self.m_inst_pr_map = aInstPriceMap;
+        self.m_inst_pr_map = aAsset;
         self.m_tran_details={};
 
     def buyUnits(self,aUnits,aDate):
@@ -25,12 +26,18 @@ class Holding:
 
     def buyAmount(self,aAmount, aDate):
         norm_date = pd.to_datetime(aDate);
-        units = aAmount/self.m_inst_pr_map[norm_date];
+        inst_val = self.m_inst_pr_map.getValue(norm_date);
+        if (inst_val == 0):
+            return;
+        units = aAmount/inst_val;
         self.buyUnits(units, norm_date);
 
     def sellAmount(self,aAmount, aDate):
         norm_date = pd.to_datetime(aDate);
-        units = aAmount/self.m_inst_pr_map[norm_date];
+        inst_val = self.m_inst_pr_map.getValue(norm_date);
+        if (inst_val == 0):
+            return;
+        units = aAmount/inst_val;
         self.sellUnits(units, norm_date);
 
     def getHoldingValue(self,aDate):
@@ -38,12 +45,12 @@ class Holding:
         holding_units = 0;
         filtered = dict(itertools.filterfalse(lambda i:i[0] > norm_date, self.m_tran_details.items()))
         holding_units += sum(filtered.values());
-        value = (self.m_inst_pr_map[norm_date])*holding_units;
+        value = (self.m_inst_pr_map.getValue(norm_date))*holding_units;
         return value;
 
     def getXIRR(self, aDate):
         norm_date = pd.to_datetime(aDate);
-        cash_flow = {key:val*self.m_inst_pr_map[key] for (key, val) in self.m_tran_details.items()};
+        cash_flow = {key:val*self.m_inst_pr_map.getValue(key) for (key, val) in self.m_tran_details.items()};
         filtered = dict(itertools.filterfalse(lambda i:i[0] > norm_date, cash_flow.items()))
         final_val = self.getHoldingValue(aDate);
         if (norm_date in filtered.keys()):
@@ -61,22 +68,8 @@ def getSIPReturn(aInstPr,aFreq,aStart,aEnd):
     norm_end_date = pd.to_datetime(aEnd);
     sip_date = norm_date;
 
-    while (not(sip_date in aInstPr.keys())):
-        sip_date+=dt.timedelta(days=1);
-    hldng.buyAmount(100, sip_date);
-
     while(sip_date < norm_end_date):
-        temp_date=sip_date+dt.timedelta(days=aFreq);
-        while (not(temp_date in aInstPr.keys())):
-            if (temp_date >= norm_end_date):
-                break;
-            temp_date+=dt.timedelta(days=1);
-            
-        if (temp_date in aInstPr.keys()):
-            sip_date = temp_date;
-            hldng.buyAmount(100, sip_date);
-
-        if (temp_date >= norm_end_date):
-            break;
+        hldng.buyAmount(100, sip_date);
+        sip_date+=dt.timedelta(days=aFreq);
 
     return hldng.getXIRR(sip_date);
