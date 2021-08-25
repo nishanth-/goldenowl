@@ -3,6 +3,7 @@ setup(
     name = 'goldenowl',         # Name of pip install package 
     packages = [
                 'goldenowl',
+                'goldenowl.asset'
                 'goldenowl.portfolio'
                 ],   # All packages in the project
     version = '3.0.0',      # Canonical versioning
