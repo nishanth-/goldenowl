@@ -13,7 +13,22 @@ class Portfolio:
         self.m_cashFlow = {};
 
     def rebalance(self, aDate):
-        print('TODO');
+        tot_amount = 0;
+        norm_date = pd.to_datetime(aDate);
+        for a, hld in self.m_holdingMap.items():
+            tot_amount += hld.getValue(aDate);
+
+        cur_ratio = {ast: hold.getValue(aDate)/tot_amount for ast, hold in self.m_holdingMap.items() };
+        adj_ratio = {key: val - cur_ratio[key] for key, val in self.m_assetRatioMap.items() };
+        for astName, hldObj in self.m_holdingMap.items():
+            ratio = adj_ratio[astName];
+            if ratio > 0:
+                hldObj.buyAmount(tot_amount*ratio, aDate);
+                self.m_cashFlow[norm_date] = tot_amount*ratio;
+            else:
+                hldObj.sellAmount(-1*tot_amount*ratio, aDate);
+                self.m_cashFlow[norm_date] = tot_amount*ratio;
+
 
     def addAmount(self, aAmount, aDate):
         norm_date = pd.to_datetime(aDate);

@@ -57,6 +57,34 @@ def test_removeAmount():
     valh2 = hldng2.getValue('2012-01-23');
     assert (val) == (valh1+ valh2), "removeAmount failed"
 
+def test_rebalance():
+    asset1 = at.Asset('Asset1', get_prdata());
+    pr_data = get_prdata();
+    pr_data.loc[pr_data.Date == pd.to_datetime("2000-10-03"), ['Close']] = 200;
+    pr_data.loc[pr_data.Date == pd.to_datetime("2012-01-23"), ['Close']] = 3000;
+    asset2 = at.Asset('Asset2', pr_data);
+    asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
+
+    prtf = pf.Portfolio('TestP', asset_ratio_list);
+    prtf.addAmount(200, '1992-11-23');
+    prtf.removeAmount(100, '2000-10-03');
+
+    final_val = prtf.getValue('2012-01-23');
+    val_bef_rebalance = prtf.getValue('2000-10-03');
+    prtf.rebalance('2000-10-03');
+    hldng1 =hd.Holding('Test1', asset1);
+    hldng2 =hd.Holding('Test2', asset2);
+    hldng1.buyAmount(val_bef_rebalance*0.4, '2000-10-03');
+    hldng2.buyAmount(val_bef_rebalance*0.6, '2000-10-03');
+
+    hldval1= hldng1.getValue('2012-01-23');
+    hldval2= hldng2.getValue('2012-01-23');
+    final_val_rb = prtf.getValue('2012-01-23');
+
+    assert (final_val_rb) == pytest.approx(hldval1 + hldval2,0.1), "post rebalance tally failed"
+    assert (final_val_rb) != pytest.approx(final_val, 0.1), "post and pre rebalance same"
+
+
 def test_XIRR():
     asset1 = at.Asset('Asset1', get_prdata());
     pr_data = get_prdata();
