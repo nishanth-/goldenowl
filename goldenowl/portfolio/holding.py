@@ -75,4 +75,4 @@ def getSIPReturn(aInstPr,aFreq,aStart,aEnd):
         hldng.buyAmount(100, sip_date);
         sip_date+=dt.timedelta(days=aFreq);
 
-    return hldng.getXIRR(sip_date);
+    return hldng.getXIRR(norm_end_date);

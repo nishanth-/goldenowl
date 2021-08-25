@@ -18,6 +18,9 @@ class Portfolio:
         for a, hld in self.m_holdingMap.items():
             tot_amount += hld.getValue(aDate);
 
+        if (tot_amount == 0):
+            return;
+
         cur_ratio = {ast: hold.getValue(aDate)/tot_amount for ast, hold in self.m_holdingMap.items() };
         adj_ratio = {key: val - cur_ratio[key] for key, val in self.m_assetRatioMap.items() };
         for astName, hldObj in self.m_holdingMap.items():
@@ -63,7 +66,19 @@ class Portfolio:
 #Free floating functions below
 
 def getSIPReturn(aInstrRatioList, aSipFreq, aRebalanceFreq, aStart, aEnd):
-    print('TODO');
+    prtf = Portfolio('Calc', aInstrRatioList);
+    norm_date = pd.to_datetime(aStart);
+    norm_end_date = pd.to_datetime(aEnd);
+    sip_date = norm_date;
+    rebal_date = norm_date;
 
+    while(sip_date < norm_end_date):
+        prtf.addAmount(100, sip_date);
+        sip_date+=dt.timedelta(days=aSipFreq);
 
+    while(rebal_date < norm_end_date):
+        prtf.rebalance(rebal_date);
+        rebal_date+=dt.timedelta(days=aRebalanceFreq);
+
+    return prtf.getXIRR(norm_end_date);
 
