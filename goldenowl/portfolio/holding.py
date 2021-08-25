@@ -43,7 +43,7 @@ class Holding:
         units = aAmount/inst_val;
         self.sellUnits(units, norm_date);
 
-    def getHoldingValue(self,aDate):
+    def getValue(self,aDate):
         norm_date = pd.to_datetime(aDate); 
         holding_units = 0;
         filtered = dict(itertools.filterfalse(lambda i:i[0] > norm_date, self.m_tran_details.items()))
@@ -55,7 +55,7 @@ class Holding:
         norm_date = pd.to_datetime(aDate);
         cash_flow = {key:val*self.m_inst_pr_map.getValue(key) for (key, val) in self.m_tran_details.items()};
         filtered = dict(itertools.filterfalse(lambda i:i[0] > norm_date, cash_flow.items()))
-        final_val = self.getHoldingValue(aDate);
+        final_val = self.getValue(aDate);
         if (norm_date in filtered.keys()):
             filtered[norm_date]-= final_val;
         else:

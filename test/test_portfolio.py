@@ -1,0 +1,74 @@
+import pytest
+import pandas as pd
+import goldenowl.portfolio.holding as hd
+import goldenowl.portfolio.portfolio as pf
+import goldenowl.asset.asset as at
+
+def get_prdata():
+    price_dict_raw ={
+                '1992-11-23': 234.2,
+                '1999-01-23': 34.2,
+                '2000-10-03': 134.2,
+                '2001-11-01': 333.9,
+                '2002-11-23': 234.2,
+                '2005-05-2': 100,
+                '2012-01-23': 4000.0,
+                };
+    price_dict = {pd.to_datetime(key):val for key, val in price_dict_raw.items()} 
+    tup = list(zip(price_dict.keys(), price_dict.values()));
+    data = pd.DataFrame(tup, columns=['Date', 'Close']);
+    data['Open'] = data['High'] = data['Low'] = 0;
+    return data;
+
+def test_addAmount():
+    asset1 = at.Asset('Asset1', get_prdata());
+    asset2 = at.Asset('Asset2', get_prdata());
+    asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
+    prtf = pf.Portfolio('TestP', asset_ratio_list);
+
+    hldng1 =hd.Holding('Test1', asset1);
+    hldng2 =hd.Holding('Test2', asset2);
+    prtf.addAmount(200, '1992-11-23');
+    val = prtf.getValue('2012-01-23');
+
+    hldng1.buyAmount(200*0.4, '1992-11-23');
+    hldng2.buyAmount(200*0.6, '1992-11-23');
+    valh1 = hldng1.getValue('2012-01-23');
+    valh2 = hldng2.getValue('2012-01-23');
+    assert (val) == (valh1+ valh2), "addAmount failed"
+
+def test_removeAmount():
+    asset1 = at.Asset('Asset1', get_prdata());
+    asset2 = at.Asset('Asset2', get_prdata());
+    asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
+    prtf = pf.Portfolio('TestP', asset_ratio_list);
+
+    hldng1 =hd.Holding('Test1', asset1);
+    hldng2 =hd.Holding('Test2', asset2);
+    prtf.addAmount(200, '1992-11-23');
+    prtf.removeAmount(100, '2000-10-03');
+    val = prtf.getValue('2012-01-23');
+
+    hldng1.buyAmount(200*0.4, '1992-11-23');
+    hldng2.buyAmount(200*0.6, '1992-11-23');
+    hldng1.sellAmount(100*0.4, '2000-10-03');
+    hldng2.sellAmount(100*0.6, '2000-10-03');
+    valh1 = hldng1.getValue('2012-01-23');
+    valh2 = hldng2.getValue('2012-01-23');
+    assert (val) == (valh1+ valh2), "removeAmount failed"
+
+def test_XIRR():
+    asset1 = at.Asset('Asset1', get_prdata());
+    pr_data = get_prdata();
+    pr_data.loc[pr_data.Date == pd.to_datetime("2000-10-03"), ['Close']] = 200;
+    pr_data.loc[pr_data.Date == pd.to_datetime("2012-01-23"), ['Close']] = 3000;
+    asset2 = at.Asset('Asset2', pr_data);
+    asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
+
+    prtf = pf.Portfolio('TestP', asset_ratio_list);
+    prtf.addAmount(200, '1992-11-23');
+    prtf.removeAmount(100, '2000-10-03');
+    val = prtf.getXIRR('2012-01-23');
+
+    assert (val) == pytest.approx(0.092,0.1), "XIRR failed"
+
