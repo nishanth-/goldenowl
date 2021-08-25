@@ -13,23 +13,21 @@ class Asset:
         self.m_priceMap.loc[self.m_priceMap['Low'] == 0, ['Low']] = self.m_priceMap[self.m_priceMap['Low'] == 0].Close
         self.m_priceMap['High'] =self.m_priceMap[['Open','High','Low','Close']].max(axis=1)
         self.m_priceMap['Low'] =self.m_priceMap[['Open','High','Low','Close']].min(axis=1)
+        self.m_date_set = set(self.m_priceMap.Date);
 
     def getName(self):
         return self.m_name;
 
     def getValue(self, aDate):
         norm_date = pd.to_datetime(aDate);
-        date_set = sorted(set(self.m_priceMap.Date));
+        date_set = self.m_date_set;
         min_date = min(date_set);
         if (norm_date < min_date):
             return 0;
         if not (norm_date in date_set):
-            cur_date = min_date;
-            for elem in date_set:
-                if (norm_date - elem) < dt.timedelta(days=0):
-                    break;
-                cur_date = elem;
-            norm_date = cur_date;
+            date_diff = {norm_date - elem : elem for elem in date_set};
+            pos_diff = [date_elem for date_elem in date_diff.keys() if date_elem > dt.timedelta(days=0)];
+            norm_date = date_diff[min(pos_diff)];
 
         return list(self.m_priceMap[self.m_priceMap.Date == norm_date].Close)[0]
 
