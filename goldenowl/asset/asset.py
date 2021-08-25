@@ -19,12 +19,18 @@ class Asset:
 
     def getValue(self, aDate):
         norm_date = pd.to_datetime(aDate);
-        date_set = set(self.m_priceMap.Date);
+        date_set = sorted(set(self.m_priceMap.Date));
         min_date = min(date_set);
         if (norm_date < min_date):
             return 0;
-        while not(norm_date in date_set) and norm_date > min_date: 
-            norm_date-= dt.timedelta(days=1);
+        if not (norm_date in date_set):
+            cur_date = min_date;
+            for elem in date_set:
+                if (norm_date - elem) < dt.timedelta(days=0):
+                    break;
+                cur_date = elem;
+            norm_date = cur_date;
+
         return list(self.m_priceMap[self.m_priceMap.Date == norm_date].Close)[0]
 
     def _get_diffTimeFrame(self, timeframe):

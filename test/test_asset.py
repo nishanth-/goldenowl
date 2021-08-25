@@ -17,6 +17,9 @@ def test_Value():
     name = inst.getName();
     assert name == "Test", "Asset name incorrect"
     assert (val) == 1097, "Asset value retrieval failed"
+    val1 = inst.getValue("2000-01-01");
+    val2 = inst.getValue("2021-01-01");
+    assert val1 == val2, "Nearest Asset value retrieval failed"
 
 def test_Returns():
     pr_d = get_prdata();
