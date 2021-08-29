@@ -4,6 +4,7 @@ import datetime as dt
 from xirr.math import xirr
 import goldenowl.asset.asset as at
 import goldenowl.portfolio.holding as hd
+from goldenowl.portfolio.simplePut import SimplePut
 
 class Portfolio:
     def __init__(self, aName, aAssetRatioList):
@@ -11,6 +12,23 @@ class Portfolio:
         self.m_holdingMap={asset.getName(): hd.Holding(asset.getName(), asset) for asset, ratio in aAssetRatioList};
         self.m_assetRatioMap={asset.getName(): ratio for asset, ratio in aAssetRatioList}
         self.m_cashFlow = {};
+        self.m_hedge_det = ();
+
+    def setLongPutHedge(self, aAsset, aBuffer, aHedgePortfolioRatio, aDuration, aDate):
+        norm_date = pd.to_datetime(aDate);
+        self.m_hedge_det = (aAsset, aBuffer, aHedgePortfolioRatio, aDuration);
+        hedge_hldng = SimplePut('__Hedge__',aAsset, aAsset.getValue(aDate)-aBuffer, norm_date+aDuration, aHedgePortfolioRatio); 
+        correction_ratio = 1-aHedgePortfolioRatio;
+        for ast, ratio in self.m_assetRatioMap.items():
+            self.m_assetRatioMap[ast] = correction_ratio * ratio;
+        self.m_holdingMap['__Hedge__'] = hedge_hldng;
+        self.m_assetRatioMap['__Hedge__'] = aHedgePortfolioRatio;
+        tot_ratio =0;
+        for ast, ratio in self.m_assetRatioMap.items():
+            tot_ratio+= ratio;
+        assert(tot_ratio == 1);
+
+
 
     def rebalance(self, aDate):
         tot_amount = 0;
