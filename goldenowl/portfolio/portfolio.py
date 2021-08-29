@@ -14,11 +14,19 @@ class Portfolio:
         self.m_cashFlow = {};
         self.m_hedge_det = ();
 
+    def getHedgeDet(self):
+        return self.m_hedge_det;
+
     def setLongPutHedge(self, aAsset, aBuffer, aHedgePortfolioRatio, aDuration, aDate):
         norm_date = pd.to_datetime(aDate);
-        self.m_hedge_det = (aAsset, aBuffer, aHedgePortfolioRatio, aDuration);
+        self.m_hedge_det = (aAsset, aBuffer, aDuration, aDate);
         hedge_hldng = SimplePut('__Hedge__',aAsset, aAsset.getValue(aDate)-aBuffer, norm_date+aDuration, aHedgePortfolioRatio); 
-        correction_ratio = 1-aHedgePortfolioRatio;
+        correction_ratio = 1;
+        if ('__Hedge__' in self.m_assetRatioMap):
+            correction_ratio = (1-aHedgePortfolioRatio)/(1-self.m_assetRatioMap['__Hedge__']);
+        else:
+            correction_ratio = 1-aHedgePortfolioRatio;
+
         for ast, ratio in self.m_assetRatioMap.items():
             self.m_assetRatioMap[ast] = correction_ratio * ratio;
         self.m_holdingMap['__Hedge__'] = hedge_hldng;
@@ -83,9 +91,13 @@ class Portfolio:
 
 #Free floating functions below
 
-def getSIPReturn(aInstrRatioList, aSipFreq, aRebalanceFreq, aStart, aEnd):
+def getSIPReturn(aInstrRatioList, aSipFreq, aRebalanceFreq, aStart, aEnd,
+                 aHedgeAsset=None, aHedgeBuffer= None, aHedgeDuration=None, aHedgePortfolioRatio=None):
     prtf = Portfolio('Calc', aInstrRatioList);
     norm_date = pd.to_datetime(aStart);
+    if (aHedgeAsset != None):
+        prtf.setLongPutHedge(aHedgeAsset, aHedgeBuffer, aHedgePortfolioRatio, aHedgeDuration, norm_date);
+
     norm_end_date = pd.to_datetime(aEnd);
     sip_date = norm_date;
     rebal_date = norm_date;
@@ -96,6 +108,12 @@ def getSIPReturn(aInstrRatioList, aSipFreq, aRebalanceFreq, aStart, aEnd):
 
     while(rebal_date < norm_end_date):
         prtf.rebalance(rebal_date);
+        if (aHedgeAsset != None):
+            cur_hedge_det = prtf.getHedgeDet();
+            cur_hedge_level = cur_hedge_det[0].getValue(cur_hedge_det[3])-cur_hedge_det[1];
+            new_hedge_level =aHedgeAsset.getValue(rebal_date) - aHedgeBuffer;
+            if ((new_hedge_level > cur_hedge_level) or cur_hedge_det[3]+cur_hedge_det[2] < rebal_date): 
+                prtf.setLongPutHedge(aHedgeAsset, aHedgeBuffer, aHedgePortfolioRatio, aHedgeDuration, rebal_date);
         rebal_date+=dt.timedelta(days=aRebalanceFreq);
 
     return prtf.getXIRR(norm_end_date);
