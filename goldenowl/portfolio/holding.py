@@ -27,9 +27,12 @@ class Holding:
         else:
             self.m_tran_details[norm_date]= -aUnits;
 
+    def _getAssetValue(self, aDate):
+        return self.m_inst_pr_map.getValue(aDate);
+
     def buyAmount(self,aAmount, aDate):
         norm_date = pd.to_datetime(aDate);
-        inst_val = self.m_inst_pr_map.getValue(norm_date);
+        inst_val = self._getAssetValue(norm_date);
         if (inst_val == 0):
             return;
         units = aAmount/inst_val;
@@ -37,7 +40,7 @@ class Holding:
 
     def sellAmount(self,aAmount, aDate):
         norm_date = pd.to_datetime(aDate);
-        inst_val = self.m_inst_pr_map.getValue(norm_date);
+        inst_val = self._getAssetValue(norm_date);
         if (inst_val == 0):
             return;
         units = aAmount/inst_val;
@@ -48,12 +51,12 @@ class Holding:
         holding_units = 0;
         filtered = dict(itertools.filterfalse(lambda i:i[0] > norm_date, self.m_tran_details.items()))
         holding_units += sum(filtered.values());
-        value = (self.m_inst_pr_map.getValue(norm_date))*holding_units;
+        value = (self._getAssetValue(norm_date))*holding_units;
         return value;
 
     def getXIRR(self, aDate):
         norm_date = pd.to_datetime(aDate);
-        cash_flow = {key:val*self.m_inst_pr_map.getValue(key) for (key, val) in self.m_tran_details.items()};
+        cash_flow = {key:val*self._getAssetValue(key) for (key, val) in self.m_tran_details.items()};
         filtered = dict(itertools.filterfalse(lambda i:i[0] > norm_date, cash_flow.items()))
         final_val = self.getValue(aDate);
         if (norm_date in filtered.keys()):
