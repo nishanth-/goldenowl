@@ -6,12 +6,12 @@ setup(
                 'goldenowl.asset',
                 'goldenowl.portfolio'
                 ],   # All packages in the project
-    version = '4.2.0',      # Canonical versioning
+    version = '4.2.1',      # Canonical versioning
     license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     author = 'Nishanth (nishanth-)',
     author_email = '',
     url = 'https://github.com/nishanth-/goldenowl',   # Link to home page
-    download_url = 'https://github.com/nishanth-/goldenowl/archive/refs/tags/v_420.tar.gz',    # Link to release tar file
+    download_url = 'https://github.com/nishanth-/goldenowl/archive/refs/tags/v_421.tar.gz',    # Link to release tar file
     keywords = ['finance', 'investment', 'quant'],
     install_requires=[            # All dependencies from pipreqs <folder>
                       'pandas>=1.1.5',

@@ -142,5 +142,5 @@ def test_SIPWithHedge():
     asset2 = at.Asset('Asset2', pr_data);
     asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
     sip_r = pf.getSIPReturn(asset_ratio_list, 30, 90, '1990-11-23', '2020-11-11',
-                           asset1, 0.03, dt.timedelta(days=360) , 0.01);
+                           asset1, 0.02, dt.timedelta(days=360) , 0.01);
     assert sip_r == pytest.approx(0.171,0.01), "SIP calculation failed"

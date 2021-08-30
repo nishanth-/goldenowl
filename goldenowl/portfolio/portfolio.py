@@ -23,6 +23,7 @@ class Portfolio:
         hedge_hldng = SimplePut('__Hedge__',aAsset, aAsset.getValue(aDate)*(1-aBufferFraction), norm_date+aDuration, aHedgePortfolioRatio); 
         correction_ratio = 1;
         if ('__Hedge__' in self.m_assetRatioMap):
+            self.rebalance(aDate);
             correction_ratio = (1-aHedgePortfolioRatio)/(1-self.m_assetRatioMap['__Hedge__']);
         else:
             correction_ratio = 1-aHedgePortfolioRatio;
