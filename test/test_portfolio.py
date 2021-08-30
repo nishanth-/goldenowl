@@ -26,7 +26,7 @@ def test_hedge():
     asset2 = at.Asset('Asset2', get_prdata());
     asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
     prtf = pf.Portfolio('TestP', asset_ratio_list);
-    prtf.setLongPutHedge(asset1, 34.2, 0.01, dt.timedelta(days =36000), '1992-12-01');  
+    prtf.setLongPutHedge(asset1, 0.146, 0.01, dt.timedelta(days =36000), '1992-12-01');  
 
     hldng1 =hd.Holding('Test1', asset1);
     hldng2 =hd.Holding('Test2', asset2);
@@ -142,5 +142,5 @@ def test_SIPWithHedge():
     asset2 = at.Asset('Asset2', pr_data);
     asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
     sip_r = pf.getSIPReturn(asset_ratio_list, 30, 90, '1990-11-23', '2020-11-11',
-                           asset1, 10, dt.timedelta(days=360) , 0.01);
+                           asset1, 0.03, dt.timedelta(days=360) , 0.01);
     assert sip_r == pytest.approx(0.171,0.01), "SIP calculation failed"
