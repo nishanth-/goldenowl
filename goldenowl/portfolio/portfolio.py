@@ -22,10 +22,21 @@ class Portfolio:
         self.m_hedge_det = (aAsset, aBufferFraction, aDuration, aDate);
         hedge_hldng = SimplePut('__Hedge__',aAsset, aAsset.getValue(aDate)*(1-aBufferFraction), norm_date+aDuration, aHedgePortfolioRatio); 
         correction_ratio = 1;
+        port_val = self.getValue(aDate);
         if ('__Hedge__' in self.m_assetRatioMap):
-            self.rebalance(aDate);
+            old_buy_val = self.m_holdingMap['__Hedge__'].getValue(self.m_hedge_det[3]);
+            old_val = self.m_holdingMap['__Hedge__'].getValue(aDate);
+            hedge_hldng.buyAmount((port_val-old_val+old_buy_val) * aHedgePortfolioRatio, aDate);
+            new_val = hedge_hldng.getValue(aDate);
+            if (old_val > new_val):
+                self.addAmount(old_val - new_val, aDate);
+            else:
+                self.removeAmount(new_val - old_val, aDate);
             correction_ratio = (1-aHedgePortfolioRatio)/(1-self.m_assetRatioMap['__Hedge__']);
         else:
+            hedge_amnt = port_val* aHedgePortfolioRatio;
+            hedge_hldng.buyAmount(hedge_amnt, aDate);
+            self.removeAmount(hedge_amnt, aDate);
             correction_ratio = 1-aHedgePortfolioRatio;
 
         for ast, ratio in self.m_assetRatioMap.items():
@@ -42,8 +53,11 @@ class Portfolio:
     def rebalance(self, aDate):
         tot_amount = 0;
         norm_date = pd.to_datetime(aDate);
-        for a, hld in self.m_holdingMap.items():
-            tot_amount += hld.getValue(aDate);
+        for asset_nm, hld in self.m_holdingMap.items():
+            if (asset_nm == '__Hedge__'):
+                tot_amount += hld.getValue(self.m_hedge_det[3]); 
+            else:
+                tot_amount += hld.getValue(aDate);
 
         if (tot_amount == 0):
             return;
@@ -51,6 +65,8 @@ class Portfolio:
         cur_ratio = {ast: hold.getValue(aDate)/tot_amount for ast, hold in self.m_holdingMap.items() };
         adj_ratio = {key: val - cur_ratio[key] for key, val in self.m_assetRatioMap.items() };
         for astName, hldObj in self.m_holdingMap.items():
+            if (astName == '__Hedge__'):
+                continue;
             ratio = adj_ratio[astName];
             if ratio > 0:
                 hldObj.buyAmount(tot_amount*ratio, aDate);
@@ -62,13 +78,27 @@ class Portfolio:
 
     def addAmount(self, aAmount, aDate):
         norm_date = pd.to_datetime(aDate);
+        hedge_ratio = 0;
+        if ('__Hedge__' in self.m_assetRatioMap):
+            hedge_ratio = self.m_assetRatioMap['__Hedge__'];
+
         for asset, ratio in self.m_assetRatioMap.items():
+            if (asset == '__Hedge__'):
+                continue;
+            ratio = (ratio/(1-hedge_ratio))
             self.m_holdingMap[asset].buyAmount(aAmount * ratio, aDate);
         self.m_cashFlow[norm_date] = aAmount;
 
     def removeAmount(self, aAmount, aDate):
         norm_date = pd.to_datetime(aDate);
+        hedge_ratio = 0;
+        if ('__Hedge__' in self.m_assetRatioMap):
+            hedge_ratio = self.m_assetRatioMap['__Hedge__'];
+
         for asset, ratio in self.m_assetRatioMap.items():
+            if (asset == '__Hedge__'):
+                continue;
+            ratio = (ratio/(1-hedge_ratio))
             self.m_holdingMap[asset].sellAmount(aAmount * ratio, aDate);
         self.m_cashFlow[norm_date] = -aAmount;
 

@@ -26,22 +26,23 @@ def test_hedge():
     asset2 = at.Asset('Asset2', get_prdata());
     asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
     prtf = pf.Portfolio('TestP', asset_ratio_list);
+
+    prtf.addAmount(200, '1992-11-23');
     prtf.setLongPutHedge(asset1, 0.146, 0.01, dt.timedelta(days =36000), '1992-12-01');  
+    val_start = prtf.getValue('1992-12-23');
 
     hldng1 =hd.Holding('Test1', asset1);
     hldng2 =hd.Holding('Test2', asset2);
-    prtf.addAmount(200, '1992-11-23');
-    val_start = prtf.getValue('1992-12-23');
-    val = prtf.getValue('2012-01-23');
+    hldng1.buyAmount(200*0.4*0.99, '1992-11-23');
+    hldng2.buyAmount(200*0.6*0.99, '1992-11-23');
 
-    hldng1.buyAmount(200*0.4, '1992-11-23');
-    hldng2.buyAmount(200*0.6, '1992-11-23');
-    valh1 = 0.99*hldng1.getValue('2012-01-23');
-    valh2 = 0.99*hldng2.getValue('2012-01-23');
-    assert (val) == pytest.approx(valh1+ valh2, 0.1), "hedge OTM failed"
+    valh1 = hldng1.getValue('2012-01-23');
+    valh2 = hldng2.getValue('2012-01-23');
+    val = prtf.getValue('2012-01-23');
+    assert (0.99 * val) == pytest.approx(valh1+ valh2, 0.01), "hedge OTM failed"
 
     val_low = prtf.getValue('2005-06-1');
-    assert (val_low) == pytest.approx((200/234.2)*val_start, 0.1), "hedge ITM failed"
+    assert (val_low) == pytest.approx((200/234.2)*val_start, 0.01), "hedge ITM failed"
 
 def test_addAmount():
     asset1 = at.Asset('Asset1', get_prdata());
@@ -142,5 +143,5 @@ def test_SIPWithHedge():
     asset2 = at.Asset('Asset2', pr_data);
     asset_ratio_list = [(asset1, 0.4), (asset2, 0.6)]
     sip_r = pf.getSIPReturn(asset_ratio_list, 30, 90, '1990-11-23', '2020-11-11',
-                           asset1, 0.02, dt.timedelta(days=360) , 0.01);
-    assert sip_r == pytest.approx(0.171,0.01), "SIP calculation failed"
+                           asset1, 0.1, dt.timedelta(days=360) , 0.01);
+    assert sip_r == pytest.approx(0.191,0.01), "SIP calculation failed"
