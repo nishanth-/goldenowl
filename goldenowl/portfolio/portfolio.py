@@ -19,7 +19,6 @@ class Portfolio:
 
     def setLongPutHedge(self, aAsset, aBufferFraction, aHedgePortfolioRatio, aDuration, aDate):
         norm_date = pd.to_datetime(aDate);
-        self.m_hedge_det = (aAsset, aBufferFraction, aDuration, aDate);
         hedge_hldng = SimplePut('__Hedge__',aAsset, aAsset.getValue(aDate)*(1-aBufferFraction), norm_date+aDuration, aHedgePortfolioRatio); 
         correction_ratio = 1;
         port_val = self.getValue(aDate);
@@ -38,6 +37,8 @@ class Portfolio:
             hedge_hldng.buyAmount(hedge_amnt, aDate);
             self.removeAmount(hedge_amnt, aDate);
             correction_ratio = 1-aHedgePortfolioRatio;
+
+        self.m_hedge_det = (aAsset, aBufferFraction, aDuration, aDate);
 
         for ast, ratio in self.m_assetRatioMap.items():
             self.m_assetRatioMap[ast] = correction_ratio * ratio;
